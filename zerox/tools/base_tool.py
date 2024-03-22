@@ -18,7 +18,17 @@ class AbstractBaseTool(ABC):
     ):
         # Initialize the logger in the constructor
         # Configure loguru logger if necessary, e.g., log file, log level
+        self.credentials = credentials
+        self.headers = headers
+        self.verbose = verbose
+        self.base_url = base_url
+        self.verison = verison
+        self.name = name
+        self.description = description
+        
+        # Log the initialization
         logger.info("Tool initialized")
+        
 
     @abstractmethod
     def connect(self):
@@ -26,18 +36,15 @@ class AbstractBaseTool(ABC):
         # Abstract method to connect the tool
         pass
 
-    @abstractmethod
     def add(self, item):
         # Abstract method to add an item
         pass
 
-    @abstractmethod
     def close_connection(self):
         logger.info("Closing the tool connection")
         # Abstract method to close the tool connection
         pass
-
-    @abstractmethod
+    
     def cache(self, data):
         # Abstract method for caching data
         pass
