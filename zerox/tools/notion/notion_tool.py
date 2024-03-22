@@ -1,9 +1,11 @@
 import os
+from typing import Any, List
+
 import requests
 from dotenv import load_dotenv
-from pydantic import BaseModel
 from loguru import logger
-from typing import List, Any
+from pydantic import BaseModel
+from zerox.tools.base_tool import AbstractBaseTool
 
 # Load environment variables
 load_dotenv()
@@ -12,7 +14,11 @@ load_dotenv()
 # Define API header model
 class APIHeaderModel(BaseModel):
     Authorization: str = f"Bearer {os.environ.get('NOTION_API_KEY')}"
-    NotionVersion: dict = {"Notion-Version": "2021-05-13"}
+    NotionVersion: dict = {
+        "Notion-Version": (
+            os.environ.get("NOTION_VERSION") or "2021-05-13"
+        )
+    }
     ContentType: str = "application/json"
 
 
@@ -24,10 +30,6 @@ class NotionCredentials(BaseModel):
 
 class NotionEntry(BaseModel):
     parent: dict
-    properties: dict
-
-
-class NotionUpdate(BaseModel):
     properties: dict
 
 
@@ -48,7 +50,7 @@ class NotionUpdate(BaseModel):
     page_id: str
 
 
-class NotionTool:
+class NotionTool(AbstractBaseTool):
     """
     A class representing a tool for interacting with Notion API.
 
@@ -66,6 +68,7 @@ class NotionTool:
         *args,
         **kwargs,
     ):
+        super().__init__(*args, **kwargs)
         self.base_url = base_url
         self.credentials = credentials
         self.headers = headers
@@ -75,6 +78,9 @@ class NotionTool:
         logger.info(f"Using credentials: {credentials}")
         logger.info(f"Using headers: {headers}")
 
+        # Cache connection
+        self.is_connected = False
+
     def connect(self):
         """
         Connects to the Notion API.
@@ -82,6 +88,9 @@ class NotionTool:
         Returns:
             bool: True if the connection is successful, False otherwise.
         """
+        if self.is_connected:
+            logger.info("Already connected to Notion")
+            return True
         try:
             logger.info("Connecting to Notion...")
             url = f"{self.base_url}databases/{self.credentials.database_id}"
@@ -89,7 +98,8 @@ class NotionTool:
             logger.info(
                 f"Connected to Notion: {response.status_code}"
             )
-            return response.status_code == 200
+            self.is_connected == response.status_code == 200
+            return self.is_connected
         except Exception as e:
             logger.error(f"Error connecting to Notion: {e}")
             return False
