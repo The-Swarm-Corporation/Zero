@@ -8,10 +8,11 @@ Zero is a reliable and customizable Zapier alternative that offers production-gr
 
 
 ## install
-`$ pip install zerox`
+```bash
+$ pip install zerox
+```
 
 ## usage
-```
 
 
 # License
